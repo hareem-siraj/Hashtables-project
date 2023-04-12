@@ -74,7 +74,7 @@ class Chainedhashtable:
     
     def __setitem__(self, key, value):
         if self.n + 1 > (self.size*0.75):        # check resize need        load factor = 0.75
-            self.resizeup()
+            self.resize()
         i = self._hash_(key)                     #hash value calculation
         if self.table[i]:                        #if skiplist doesn't exist
             self.table[i] = SkipList()           #new skiplist
@@ -82,9 +82,9 @@ class Chainedhashtable:
         else:                                    #if skiplists is exists
             self.table[i].insert((key,value))    #add to it
         if self.table[i].size()>self.n:
-            self.resizeup()                      #if new size of skiplist is greater than the hashtable, resize and rehash 
+            self.resize()                        #if new size of skiplist is greater than the hashtable, resize and rehash 
 
-    def resizeup(self) -> None:
+    def resize(self) -> None:
         self.k = 1                                       #reinitializing k for new size
         while (1 << self.k) <= self.n:                   #finding the lowest value of k such that 2^k > n
             self.k += 1 
@@ -111,7 +111,7 @@ class Chainedhashtable:
     
     def discard(self, key) -> Any:
         if 3 * self.elements < self.size: 
-            self.resizedown() 
+            self.resize() 
             # resize as per ODS
         i = self._hash_(key)
         # hash value calculation
