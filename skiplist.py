@@ -235,14 +235,14 @@ class SkipList(object):
                 temp = temp.forwards[i]
         temp= temp.forwards[0]  #this is either desired node or the successor of the key to be found
         if temp and temp.key() == key:    #if matches return the value
-            return temp.value()
+            return temp.data
         return None #not found
     
     def _items_(self) -> [(Any,Any)]:
         items=[]
         temp=self.senti.forwards[0] #for traversal
         while (temp!=None):     #until traversal on level 0 is at the end  
-            items.append(temp)
+            items.append(temp.data)
             temp=temp.forwards[0]   #next 
         return items
     
@@ -270,36 +270,33 @@ class SkipList(object):
             start=start.forwards[0] #next
         return values   #returns the range of values
     
+    # def remove(self, key: Any) -> Optional[Any]:
+    #     '''Returns the value stored for key in this skiplist and removes
+    #     (key, value) from this skiplist, returns None if key is not stored in
+    #     this skiplist.
+
+    #     Parameters:
+    #     - self: mandatory reference to this object
+    #     - key: the key to be removed
+
+    #     Returns:
+    #     the stored value for key in this skiplist, None if key does not exist
+    #     in this skiplist
+    #     '''
     def remove(self, key: Any) -> Optional[Any]:
-        '''Returns the value stored for key in this skiplist and removes
-        (key, value) from this skiplist, returns None if key is not stored in
-        this skiplist.
-
-        Parameters:
-        - self: mandatory reference to this object
-        - key: the key to be removed
-
-        Returns:
-        the stored value for key in this skiplist, None if key does not exist
-        in this skiplist
-        '''
-        travers = [None]*(self.height()+1)      #to keep track of the traversal
-        temp = self.senti   #starting node
-        for i in range(self.height()+1, -1, -1):        #top down
-            while(temp.forwards[i] and temp.forwards[i].key() < key):   #until the level is 0 or the forward is greater than or equals to the current node, keep moving forward
-                temp = temp.forwards[i]         #next
-            travers[i] = temp   #same fucntion as current in insert
-        temp = temp.forward[0]  #prev's forward is the position to be removed 
-        if temp != None and temp.key == key:
-            for i in range(self.level+1):
-                if travers[i].forwards[i] != temp:
-                    break
-                travers[i].forwards[i] = temp.forwards[i]
-            # Remove levels having no elements
-            while(self.height()>0 and self.senti.forwards[self.senti.height-1]==None):
-                self.senti.height -= 1
-            return temp.value()
-        return None 
+        u = self.senti
+        h = self.senti.height
+        removed = False
+        while h>=0:
+            while u.forwards[h] is not None and u.forwards[h].key()<key:
+                u = u.forwards[h]
+            if u.forwards[h] is not None and u.forwards[h].key()==key:
+                u.forwards[h] = u.forwards[h].forwards[h] #once we have found our target node we make its previous node point to its next node.
+                removed = True
+                if u == self.senti and u.forwards[h] is not None: #condition to check if target node was on the max level, if it was then we reduce skiplist height
+                    self.height = self.height-1
+            h = h-1
+        return removed
 
     def insert(self, data: (Any,Any)) -> None:
         '''Inserts a (key value) pair in this skiplist, overwrites the old value if key already exists.
@@ -366,4 +363,10 @@ class SkipList(object):
         return False    #if length is not 0, its not empty, negative cant be possible
 
 
-
+# S=SkipList()
+# # for i in range(10):
+# #     S.insert((i,i*10))
+# S.insert((3,33))
+# print(S._items_())
+# S.remove(3)
+# print(S._items_())

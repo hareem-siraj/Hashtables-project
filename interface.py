@@ -9,7 +9,7 @@ def main ():
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 run=False
-        WIN.fill((255,255,0))
+        WIN.fill((100,0,100))
                   #  R   G  B
         pygame.display.update()
     pygame.quit()

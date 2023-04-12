@@ -67,33 +67,37 @@ class Chainedhashtable:
     def __init__(self) -> None:
         self.n=0                                                    #initial number of elements added to the set
         self.k = 1                                                  #to keep track of 2^k for resize purposes (many hash functions only work for sizes of 2's power)
-        self.table=[[None] for _ in range(2**self.k)]         #initial table
+        self.table=[None]*(2**self.k)         #initial table
     
     def _hash_(self, x):
         return (hash(x)%len(self.table))                #hashing the value and taking mod with the size
     
     def __setitem__(self, key, value):
-        if self.n + 1 > (self.size*0.75):        # check resize need        load factor = 0.75
-            self.resize()
         i = self._hash_(key)                     #hash value calculation
-        if self.table[i]:                        #if skiplist doesn't exist
+        if not self.table[i]:                        #if skiplist doesn't exist
             self.table[i] = SkipList()           #new skiplist
             self.table[i].insert((key,value))    #insert new key,value pair
+            self.n=self.n+1
         else:                                    #if skiplists is exists
             self.table[i].insert((key,value))    #add to it
-        if self.table[i].size()>self.n:
-            self.resize()                        #if new size of skiplist is greater than the hashtable, resize and rehash 
+            self.n=self.n+1
+        # if self.table[i].size()>self.n:
+        #     self.resize()                        #if new size of skiplist is greater than the hashtable, resize and rehash 
+        if self.n + 1 > len(self.table):        # check resize need       IMPLEMENT  load factor = 0.75
+            self.resize()
 
     def resize(self) -> None:
         self.k = 1                                       #reinitializing k for new size
         while (1 << self.k) <= self.n:                   #finding the lowest value of k such that 2^k > n
             self.k += 1 
         oldtable = self.table                            #storing table into oldtable
-        self.table=[[None] for _ in range(2**self.k)]        #reinitializing new table
+        self.table=[None]*(2**self.k)                    #reinitializing new table
         self.n=0                                         #reinitializing n so the add function doesn't increment n twice 
-        for item in range(len(oldtable)):                #iterating the items or buckets(chains) of key value pairs in the dictionary
-            for (k,v) in oldtable[item]:                 #for every key value pair in the bucket/chain
-                self.__setitem__(k,v)                    #adds in the new table
+        for skip in oldtable:
+            if skip:                            #checks if skiplist at an index exists
+                items=skip._items_()            #gets the items in the skiplist
+                for i in items:         
+                    self.__setitem__(i[0],i[1]) #adds them to the table
 
     def _find_(self, key) -> bool:
         i = self._hash_(key)                            #Takes hash(element) and searches on skiplist in that index
@@ -110,13 +114,14 @@ class Chainedhashtable:
         return items                                  #returns list of all (key,value) pairs
     
     def discard(self, key) -> Any:
-        if 3 * self.elements < self.size: 
-            self.resize() 
+        # if 3 * self.n < len(self.table): 
+        #     self.resize() 
             # resize as per ODS
         i = self._hash_(key)
         # hash value calculation
-        if self.table[i].find(key) == key:      # searches the skiplist at the index in O(1 + logn) complexity
+        if self.table[i].find(key)[0] == key:      # searches the skiplist at the index in O(1 + logn) complexity
             self.table[i].remove(key)           #removes from skiplist
+            # print(self.table[i].items())
             self.n -= 1                         #decrements number of elements
             return True                         #element deleted
         return None                             #not done
@@ -127,3 +132,12 @@ class Chainedhashtable:
         self.n=0                                        #setting no. of elements to 0
 
 
+H = Chainedhashtable()
+for i in range(10):
+    H.__setitem__(i,i*10)
+H.__setitem__(33,783)
+print(H.items())
+H.discard(33)
+print(H.items())
+H.discard(8)
+print(H.items())
