@@ -1,7 +1,7 @@
 from typing import Any, Optional
 import sys
 from skiplist import SkipList
-
+import pandas as pd
 # coding influenced by ODS book
 
 class Chainedhashtable:
@@ -141,3 +141,22 @@ H.discard(33)
 print(H.items())
 H.discard(8)
 print(H.items())
+
+
+
+# # read the csv file
+# df = pd.read_csv('sampledata.csv')
+
+# # drop duplicates from the specified column
+# df.drop_duplicates(subset=['NAME'], keep='first', inplace=True)
+
+# # write the cleaned data back to the csv file
+# df.to_csv('sampledata.csv', index=False)
+
+# next(df)
+#     # iterate over each row in the CSV file
+# for row in df:
+#         # add the data to the hashtable
+#         key = row[0]  # assuming the first column contains the key
+#         value = row[1]  # assuming the second column contains the value
+#         pass #iterate over the data to add it into the hashtable
