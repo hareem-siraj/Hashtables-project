@@ -1,10 +1,115 @@
 from typing import Any, Optional
 import sys
 from skiplist import SkipList
-import pandas as pd
+# import pandas as pd
 # coding influenced by ODS book
 
 class Chainedhashtable:
+    def __init__(self) -> None:
+        self.n=0                                                    #initial number of elements added to the set
+        self.k = 1                                                  #to keep track of 2^k for resize purposes (many hash functions only work for sizes of 2's power)
+        self.table=[None]*(2**self.k)                               #initial table
+    
+    def _hash_(self, x):
+        return (hash(x)%len(self.table))                #hashing the value and taking mod with the size
+    
+    def __setitem__(self, key, value):
+        i = self._hash_(key)                     #hash value calculation
+        if self.table[i] is not None:            #if skiplist exists
+            self.table[i].insert((key,value))    #add to it
+            self.n=self.n+1
+        else:                                    #if skiplists is exists
+            self.table[i] = SkipList()           #new skiplist
+            self.table[i].insert((key,value))    #insert new key,value pair
+            self.n=self.n+1
+        if type(self.table[i])==SkipList:
+            if self.table[i].size()>len(self.table):
+                self.resize()                        #if new size of skiplist is greater than the hashtable, resize and rehash 
+        elif self.n > len(self.table)*0.75:        # check resize need       IMPLEMENT  load factor = 0.75
+            self.resize()
+
+    def resize(self) -> None:
+        self.k = 1                                       #reinitializing k for new size
+        while (1 << self.k) <= self.n:                   #finding the lowest value of k such that 2^k > n
+            self.k += 1 
+        oldtable = self.table                            #storing table into oldtable
+        self.table=[None]*(2**self.k)                    #reinitializing new table
+        self.n=0                                         #reinitializing n so the add function doesn't increment n twice 
+        for skip in oldtable:
+            if skip:                            #checks if skiplist at an index exists
+                items=skip._items_()            #gets the items in the skiplist
+                for i in items:   
+                    if len(i)!=0:            
+                        self.__setitem__(i[0],i[1]) #adds them to the table
+
+    def _find_(self, key) -> bool:
+        i = self._hash_(key)                            #Takes hash(element) and searches on skiplist in that index
+        found=None
+        if type(self.table[i])==SkipList:               #checking if there is a skiplist at the hashed index 
+            found=self.table[i].find(key)               #calls skiplist function to find the key in the skiplist
+            if found:                                   #checks if the value is found
+                return found                            #returns the found data (key,value) pair
+        return False                                    #didnt find the key
+
+    def items(self) -> [(Any, Any)]:
+        items=[]                                      
+        for element in self.table:                    #iterating over the chains  in the table
+            if type(element)==SkipList:               #checking if there is a skiplist at the hashed index 
+                items.append(element._items_())       #adds its items
+        return items                                  #returns list of all (key,value) pairs
+    
+    def discard(self, key) -> Any:
+        # if 3 * self.n < len(self.table): 
+        #     self.resize() 
+            # resize as per ODS
+        i = self._hash_(key)
+        # hash value calculation
+        if self.table[i].find(key)[0] == key:      # searches the skiplist at the index in O(1 + logn) complexity
+            self.table[i].remove(key)           #removes from skiplist
+            # print(self.table[i].items())
+            self.n -= 1                         #decrements number of elements
+            return True                         #element deleted
+        return None                             #not done
+
+    def clear(self) -> None:
+        self.k = 1                                      #reinitializing k 
+        self.table=[[None]*(2**self.k)]                     #initial table
+        self.n=0                                        #setting no. of elements to 0
+
+
+H = Chainedhashtable()
+for i in range(10):
+    H.__setitem__(i,i*4)
+H.__setitem__(33,783)
+print(H.items())
+H.discard(33)
+print(H.items())
+H.discard(8)
+print(H._find_(3))
+print(H.items())
+H.clear()
+print(H.items())
+
+####### Trial code: Another implementation 
+
+# # read the csv file
+# df = pd.read_csv('sampledata.csv')
+
+# # drop duplicates from the specified column
+# df.drop_duplicates(subset=['NAME'], keep='first', inplace=True)
+
+# # write the cleaned data back to the csv file
+# df.to_csv('sampledata.csv', index=False)
+
+# next(df)
+#     # iterate over each row in the CSV file
+# for row in df:
+#         # add the data to the hashtable
+#         key = row[0]  # assuming the first column contains the key
+#         value = row[1]  # assuming the second column contains the value
+#         pass #iterate over the data to add it into the hashtable
+
+
     
     # def __init__(self):
     #     self.size = 10  #initial size of the hashtable
@@ -64,99 +169,3 @@ class Chainedhashtable:
     # def __iter__(self) -> Any: # iteration
     #     pass
 
-    def __init__(self) -> None:
-        self.n=0                                                    #initial number of elements added to the set
-        self.k = 1                                                  #to keep track of 2^k for resize purposes (many hash functions only work for sizes of 2's power)
-        self.table=[None]*(2**self.k)         #initial table
-    
-    def _hash_(self, x):
-        return (hash(x)%len(self.table))                #hashing the value and taking mod with the size
-    
-    def __setitem__(self, key, value):
-        i = self._hash_(key)                     #hash value calculation
-        if not self.table[i]:                        #if skiplist doesn't exist
-            self.table[i] = SkipList()           #new skiplist
-            self.table[i].insert((key,value))    #insert new key,value pair
-            self.n=self.n+1
-        else:                                    #if skiplists is exists
-            self.table[i].insert((key,value))    #add to it
-            self.n=self.n+1
-        # if self.table[i].size()>self.n:
-        #     self.resize()                        #if new size of skiplist is greater than the hashtable, resize and rehash 
-        if self.n + 1 > len(self.table):        # check resize need       IMPLEMENT  load factor = 0.75
-            self.resize()
-
-    def resize(self) -> None:
-        self.k = 1                                       #reinitializing k for new size
-        while (1 << self.k) <= self.n:                   #finding the lowest value of k such that 2^k > n
-            self.k += 1 
-        oldtable = self.table                            #storing table into oldtable
-        self.table=[None]*(2**self.k)                    #reinitializing new table
-        self.n=0                                         #reinitializing n so the add function doesn't increment n twice 
-        for skip in oldtable:
-            if skip:                            #checks if skiplist at an index exists
-                items=skip._items_()            #gets the items in the skiplist
-                for i in items:         
-                    self.__setitem__(i[0],i[1]) #adds them to the table
-
-    def _find_(self, key) -> bool:
-        i = self._hash_(key)                            #Takes hash(element) and searches on skiplist in that index
-        found=self.table[i].find(key)
-        if found:
-            return self.objects[i].find(key)
-        return False                                    #didnt find
-
-    def items(self) -> [(Any, Any)]:
-        items=[]                                      
-        for element in self.table:                    #iterating over the chains  in the table
-            if element:                               #if the skiplist exists
-                items.append(element._items_())       #adds its items
-        return items                                  #returns list of all (key,value) pairs
-    
-    def discard(self, key) -> Any:
-        # if 3 * self.n < len(self.table): 
-        #     self.resize() 
-            # resize as per ODS
-        i = self._hash_(key)
-        # hash value calculation
-        if self.table[i].find(key)[0] == key:      # searches the skiplist at the index in O(1 + logn) complexity
-            self.table[i].remove(key)           #removes from skiplist
-            # print(self.table[i].items())
-            self.n -= 1                         #decrements number of elements
-            return True                         #element deleted
-        return None                             #not done
-
-    def clear(self) -> None:
-        self.k = 1                                      #reinitializing k 
-        self.table=[[None]*(2**self.k)]                     #initial table
-        self.n=0                                        #setting no. of elements to 0
-
-
-H = Chainedhashtable()
-for i in range(10):
-    H.__setitem__(i,i*10)
-H.__setitem__(33,783)
-print(H.items())
-H.discard(33)
-print(H.items())
-H.discard(8)
-print(H.items())
-
-
-
-# # read the csv file
-# df = pd.read_csv('sampledata.csv')
-
-# # drop duplicates from the specified column
-# df.drop_duplicates(subset=['NAME'], keep='first', inplace=True)
-
-# # write the cleaned data back to the csv file
-# df.to_csv('sampledata.csv', index=False)
-
-# next(df)
-#     # iterate over each row in the CSV file
-# for row in df:
-#         # add the data to the hashtable
-#         key = row[0]  # assuming the first column contains the key
-#         value = row[1]  # assuming the second column contains the value
-#         pass #iterate over the data to add it into the hashtable
