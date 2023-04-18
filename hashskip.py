@@ -64,7 +64,7 @@ class Chainedhashtable:
             # resize as per ODS
         i = self._hash_(key)
         # hash value calculation
-        if self.table[i].find(key)[0] == key:      # searches the skiplist at the index in O(1 + logn) complexity
+        if type(self.table[i])==SkipList and self.table[i].find(key)[0] == key:      # searches the skiplist at the index in O(1 + logn) complexity
             self.table[i].remove(key)           #removes from skiplist
             # print(self.table[i].items())
             self.n -= 1                         #decrements number of elements
@@ -79,10 +79,10 @@ class Chainedhashtable:
 
 H = Chainedhashtable()
 for i in range(10):
-    H.__setitem__(i,i*4)
-H.__setitem__(33,783)
-print(H.items())
-H.discard(33)
+    H.__setitem__(1+i,i*4)
+# H.__setitem__(33,783)
+# print(H.items())
+# H.discard(33)
 print(H.items())
 H.discard(8)
 print(H._find_(3))
