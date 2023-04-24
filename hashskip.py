@@ -93,20 +93,20 @@ class Chainedhashtable:
 my_table = Chainedhashtable()
 
 # read the csv file
-df = pd.read_csv('age_dataset.csv')
+df = pd.read_csv('sampledata.csv')
 
     # iterate over each row in the CSV file
 for index, row in df.iterrows():
         # add the data to the hashtable
-        key = row[6]  # assuming the first column contains the key
+        key = row[3]  # assuming the first column contains the key
         value = row[1]  # assuming the second column contains the value
         my_table[key] = value#iterate over the data to add it into the hashtable
 
-# print(my_table.items())
-# my_table.discard(64)
+print(my_table.items())
+#my_table.discard(56)
 # print(my_table.items())
 
-print(my_table._find_(1285))
+print(my_table._find_(8))
 
 ####### Trial code: Another implementation 
 
