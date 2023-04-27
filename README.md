@@ -1,1 +1,1 @@
-# Hashtables-project
+# HashSkip
