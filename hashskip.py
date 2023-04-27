@@ -1,7 +1,6 @@
 from typing import Any, Optional
 import sys
 from skiplist import SkipList
-import pandas as pd
 # coding influenced by ODS book
 
 class Chainedhashtable:
@@ -59,8 +58,8 @@ class Chainedhashtable:
         return items                                  #returns list of all (key,value) pairs
     
     def discard(self, key) -> Any:
-        # if 3 * self.n < len(self.table): 
-        #     self.resize() 
+        if 3 * self.n < len(self.table): 
+            self.resize() 
             # resize as per ODS
         i = self._hash_(key)
         # hash value calculation
@@ -77,37 +76,8 @@ class Chainedhashtable:
         self.n=0                                        #setting no. of elements to 0
 
 
-# H = Chainedhashtable()
-# for i in range(10):
-#     H.__setitem__(1+i,i*4)
-# # H.__setitem__(33,783)
-# # print(H.items())
-# # H.discard(33)
-# print(H.items())
-# H.discard(8)
-# print(H._find_(3))
-# print(H.items())
-# H.clear()
-# print(H.items())
 
-my_table = Chainedhashtable()
 
-# read the csv file
-df = pd.read_csv('sampledata.csv')
-#df = pd.read_csv('age_dataset.csv')
-
-    # iterate over each row in the CSV file
-for index, row in df.iterrows():
-        # add the data to the hashtable
-        key = row[3]  # assuming the first column contains the key
-        value = row[1]  # assuming the second column contains the value
-        my_table[key] = value#iterate over the data to add it into the hashtable
-
-print(my_table.items())
-#my_table.discard(56)
-# print(my_table.items())
-
-print(my_table._find_(8))
 
 ####### Trial code: Another implementation 
 
