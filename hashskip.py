@@ -17,7 +17,7 @@ class Chainedhashtable:
         if self.table[i] is not None:            #if skiplist exists
             self.table[i].insert((key,value))    #add to it
             self.n=self.n+1
-        else:                                    #if skiplists is exists
+        else:                                    #if skiplists dont exist
             self.table[i] = SkipList()           #new skiplist
             self.table[i].insert((key,value))    #insert new key,value pair
             self.n=self.n+1
